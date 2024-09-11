@@ -7,6 +7,7 @@
 #define PHILOSOPHER_NUM 5
 
 sem_t forks[PHILOSOPHER_NUM];
+int stop_dinner = 0; // Variable de control
 
 void *dinner(void *args)
 {
@@ -14,7 +15,7 @@ void *dinner(void *args)
     int left = philosopher_id;                          // Tenedor izquierdo
     int right = (philosopher_id + 1) % PHILOSOPHER_NUM; // Tenedor derecho
 
-    while (1)
+    while (!stop_dinner)
     {
         printf("Filósofo[%d] está pensando\n", philosopher_id);
         sleep(rand() % 6); // Asigna un tiempo aleatorio en segundos
@@ -51,21 +52,30 @@ int main()
             exit(EXIT_FAILURE);
         }
     }
+
     // Crear los hilos para cada filósofo
     for (int i = 0; i < PHILOSOPHER_NUM; i++)
     {
         ids[i] = i;
         pthread_create(&philosophers[i], NULL, dinner, &ids[i]);
     }
-    // Espera a que los hilos terminen
+
+    sleep(20);
+
+    // Se detiene el ciclo
+    stop_dinner = 1;
+
+    // Esperar a que los hilos terminen
     for (int i = 0; i < PHILOSOPHER_NUM; i++)
     {
         pthread_join(philosophers[i], NULL);
     }
+
     // Destruir los semáforos
     for (int i = 0; i < PHILOSOPHER_NUM; i++)
     {
         sem_destroy(&forks[i]);
     }
+
     return 0;
 }
